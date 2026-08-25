@@ -13,7 +13,7 @@ export default async function DashboardPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3100";
+  const baseUrl = process.env.BASE_URL ?? "http://localhost:3100";
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
