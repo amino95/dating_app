@@ -4,6 +4,7 @@ import { logoutAction } from "@/app/actions/auth";
 import { createInviteAction } from "./actions";
 import { SubmitButton } from "@/components/SubmitButton";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { NotificationSetup } from "@/components/NotificationSetup";
 import { FOOD_OPTIONS } from "@/lib/food-options";
 
 export default async function DashboardPage() {
@@ -33,6 +34,8 @@ export default async function DashboardPage() {
           </button>
         </form>
       </div>
+
+      <NotificationSetup />
 
       <section className="mt-8 rounded-3xl border border-pink-100 bg-white/80 p-6 shadow-xl shadow-pink-100/50 backdrop-blur">
         <h2 className="font-display text-lg font-semibold text-gray-900">💌 New date invite</h2>
