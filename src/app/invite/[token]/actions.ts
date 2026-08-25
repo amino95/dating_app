@@ -1,0 +1,36 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+
+export async function declineInviteAction(token: string) {
+  const invite = await prisma.invite.findUnique({ where: { token } });
+  if (!invite || invite.status !== "PENDING") return;
+
+  await prisma.invite.update({
+    where: { token },
+    data: { status: "DECLINED", respondedAt: new Date() },
+  });
+}
+
+export async function confirmInviteAction(
+  token: string,
+  data: { date: string; time: string; food: string }
+) {
+  if (!data.date || !data.time || !data.food) {
+    throw new Error("Missing date, time, or food choice.");
+  }
+
+  const invite = await prisma.invite.findUnique({ where: { token } });
+  if (!invite || invite.status !== "PENDING") return;
+
+  await prisma.invite.update({
+    where: { token },
+    data: {
+      status: "CONFIRMED",
+      chosenDate: data.date,
+      chosenTime: data.time,
+      foodChoice: data.food,
+      respondedAt: new Date(),
+    },
+  });
+}

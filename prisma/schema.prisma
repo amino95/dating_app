@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  invites      Invite[]
+}
+
+enum InviteStatus {
+  PENDING
+  DECLINED
+  CONFIRMED
+}
+
+model Invite {
+  id             String       @id @default(cuid())
+  token          String       @unique
+  status         InviteStatus @default(PENDING)
+  inviteeName    String?
+  message        String?
+  createdAt      DateTime     @default(now())
+  respondedAt    DateTime?
+  chosenDate     String?
+  chosenTime     String?
+  foodChoice     String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
