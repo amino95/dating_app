@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { format, parseISO, startOfDay } from "date-fns";
 import { FOOD_OPTIONS } from "@/lib/food-options";
+import { Calendar } from "@/components/Calendar";
 import { declineInviteAction, confirmInviteAction } from "./actions";
 
 type Step = "ask" | "schedule" | "food" | "declineMessage" | "done";
@@ -163,17 +165,15 @@ export function InviteFlow({
         </h1>
         <div className="mt-6 space-y-4">
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-              Date
-            </label>
-            <input
-              id="date"
-              type="date"
-              value={date}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setDate(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-pink-200 bg-white px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200"
-            />
+            <p className="mb-1 text-sm font-medium text-gray-700">Date</p>
+            <div className="flex justify-center rounded-xl border border-pink-200 bg-white py-2">
+              <Calendar
+                mode="single"
+                selected={date ? parseISO(date) : undefined}
+                onSelect={(selected) => setDate(selected ? format(selected, "yyyy-MM-dd") : "")}
+                disabled={{ before: startOfDay(new Date()) }}
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="time" className="block text-sm font-medium text-gray-700">
