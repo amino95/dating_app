@@ -114,11 +114,21 @@ export default async function DashboardPage() {
                     <div className="mt-3 rounded-2xl bg-gradient-to-r from-pink-50 to-orange-50 px-3.5 py-2.5 text-sm text-gray-700">
                       📅 {invite.chosenDate} at {invite.chosenTime} &middot;{" "}
                       {food ? `${food.emoji} ${food.label}` : invite.foodChoice}
+                      {invite.responseMessage && (
+                        <p className="mt-1.5 text-gray-500">&ldquo;{invite.responseMessage}&rdquo;</p>
+                      )}
                     </div>
                   )}
 
                   {invite.status === "DECLINED" && (
-                    <p className="mt-3 text-sm text-gray-500">💔 They said no this time.</p>
+                    <div className="mt-3 text-sm text-gray-500">
+                      <p>💔 They said no this time.</p>
+                      {invite.responseMessage && (
+                        <p className="mt-1.5 rounded-2xl bg-gray-50 px-3.5 py-2.5">
+                          &ldquo;{invite.responseMessage}&rdquo;
+                        </p>
+                      )}
+                    </div>
                   )}
                 </li>
               );

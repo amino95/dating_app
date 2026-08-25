@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { FOOD_OPTIONS } from "@/lib/food-options";
 import { declineInviteAction, confirmInviteAction } from "./actions";
 
-type Step = "ask" | "schedule" | "food" | "done";
+type Step = "ask" | "schedule" | "food" | "declineMessage" | "done";
 type Outcome = "CONFIRMED" | "DECLINED" | null;
 
 export function InviteFlow({
@@ -15,6 +15,7 @@ export function InviteFlow({
   chosenDate,
   chosenTime,
   foodChoice,
+  responseMessage,
 }: {
   token: string;
   requesterName: string;
@@ -23,6 +24,7 @@ export function InviteFlow({
   chosenDate: string | null;
   chosenTime: string | null;
   foodChoice: string | null;
+  responseMessage: string | null;
 }) {
   const [step, setStep] = useState<Step>(initialStatus === "PENDING" ? "ask" : "done");
   const [outcome, setOutcome] = useState<Outcome>(
@@ -31,12 +33,13 @@ export function InviteFlow({
   const [date, setDate] = useState(chosenDate ?? "");
   const [time, setTime] = useState(chosenTime ?? "");
   const [food, setFood] = useState(foodChoice ?? "");
+  const [note, setNote] = useState(responseMessage ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleDecline() {
     startTransition(async () => {
-      await declineInviteAction(token);
+      await declineInviteAction(token, note);
       setOutcome("DECLINED");
       setStep("done");
     });
@@ -46,7 +49,7 @@ export function InviteFlow({
     setError(null);
     startTransition(async () => {
       try {
-        await confirmInviteAction(token, { date, time, food });
+        await confirmInviteAction(token, { date, time, food, message: note });
         setOutcome("CONFIRMED");
         setStep("done");
       } catch {
@@ -62,6 +65,11 @@ export function InviteFlow({
           <p className="text-5xl">👋</p>
           <h1 className="mt-4 font-display text-xl font-semibold text-gray-900">No worries.</h1>
           <p className="mt-2 text-sm text-gray-500">{requesterName} has been let down gently.</p>
+          {(note || responseMessage) && (
+            <p className="mt-4 rounded-2xl bg-pink-50/60 px-4 py-3 text-sm text-gray-600">
+              &ldquo;{note || responseMessage}&rdquo;
+            </p>
+          )}
         </div>
       );
     }
@@ -79,6 +87,11 @@ export function InviteFlow({
           {foodOption ? `${foodOption.emoji} ${foodOption.label}` : "your date"} on{" "}
           {date || chosenDate} at {time || chosenTime}.
         </p>
+        {(note || responseMessage) && (
+          <p className="mt-4 rounded-2xl bg-pink-50/60 px-4 py-3 text-sm text-gray-600">
+            &ldquo;{note || responseMessage}&rdquo;
+          </p>
+        )}
       </div>
     );
   }
@@ -95,7 +108,7 @@ export function InviteFlow({
           <button
             type="button"
             disabled={isPending}
-            onClick={handleDecline}
+            onClick={() => setStep("declineMessage")}
             className="rounded-full border-2 border-pink-200 px-6 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-pink-50 disabled:opacity-50"
           >
             No thanks
@@ -109,6 +122,34 @@ export function InviteFlow({
             Yes! 🎉
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (step === "declineMessage") {
+    return (
+      <div>
+        <p className="text-4xl">👋</p>
+        <h1 className="mt-3 font-display text-xl font-semibold text-gray-900">
+          Want to leave a note?
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">Totally optional — {requesterName} will see it.</p>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={300}
+          rows={3}
+          placeholder="Maybe another time!"
+          className="mt-4 w-full rounded-xl border border-pink-200 bg-white px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200"
+        />
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={handleDecline}
+          className="mt-6 w-full rounded-full border-2 border-pink-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-pink-50 disabled:opacity-50"
+        >
+          {isPending ? "Sending..." : note ? "Send" : "Skip & send"}
+        </button>
       </div>
     );
   }
@@ -183,13 +224,26 @@ export function InviteFlow({
         ))}
       </div>
 
+      <label htmlFor="note" className="mt-6 block text-sm font-medium text-gray-700">
+        Add a note <span className="text-gray-400">(optional)</span>
+      </label>
+      <textarea
+        id="note"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        maxLength={300}
+        rows={2}
+        placeholder="Can't wait!"
+        className="mt-1 w-full rounded-xl border border-pink-200 bg-white px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200"
+      />
+
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       <button
         type="button"
         disabled={!food || isPending}
         onClick={handleConfirm}
-        className="mt-8 w-full rounded-full bg-gradient-to-r from-pink-500 to-orange-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-200 transition hover:scale-[1.02] hover:from-pink-600 hover:to-orange-500 disabled:opacity-50 disabled:hover:scale-100"
+        className="mt-6 w-full rounded-full bg-gradient-to-r from-pink-500 to-orange-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-200 transition hover:scale-[1.02] hover:from-pink-600 hover:to-orange-500 disabled:opacity-50 disabled:hover:scale-100"
       >
         {isPending ? "Confirming..." : "Confirm date 💕"}
       </button>

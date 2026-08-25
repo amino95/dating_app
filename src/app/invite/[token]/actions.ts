@@ -4,26 +4,30 @@ import { prisma } from "@/lib/prisma";
 import { sendPushToUser } from "@/lib/push";
 import { FOOD_OPTIONS } from "@/lib/food-options";
 
-export async function declineInviteAction(token: string) {
+export async function declineInviteAction(token: string, message?: string) {
   const invite = await prisma.invite.findUnique({ where: { token } });
   if (!invite || invite.status !== "PENDING") return;
 
+  const responseMessage = message?.trim() || null;
+
   await prisma.invite.update({
     where: { token },
-    data: { status: "DECLINED", respondedAt: new Date() },
+    data: { status: "DECLINED", respondedAt: new Date(), responseMessage },
   });
 
   const who = invite.inviteeName || "Someone";
   await sendPushToUser(invite.userId, {
     title: "💔 They said no",
-    body: `${who} declined your date invite.`,
+    body: responseMessage
+      ? `${who} declined your date invite: "${responseMessage}"`
+      : `${who} declined your date invite.`,
     url: "/dashboard",
   });
 }
 
 export async function confirmInviteAction(
   token: string,
-  data: { date: string; time: string; food: string }
+  data: { date: string; time: string; food: string; message?: string }
 ) {
   if (!data.date || !data.time || !data.food) {
     throw new Error("Missing date, time, or food choice.");
@@ -32,6 +36,8 @@ export async function confirmInviteAction(
   const invite = await prisma.invite.findUnique({ where: { token } });
   if (!invite || invite.status !== "PENDING") return;
 
+  const responseMessage = data.message?.trim() || null;
+
   await prisma.invite.update({
     where: { token },
     data: {
@@ -39,6 +45,7 @@ export async function confirmInviteAction(
       chosenDate: data.date,
       chosenTime: data.time,
       foodChoice: data.food,
+      responseMessage,
       respondedAt: new Date(),
     },
   });
@@ -49,7 +56,9 @@ export async function confirmInviteAction(
 
   await sendPushToUser(invite.userId, {
     title: "🎉 They said yes!",
-    body: `${who} is in for ${foodLabel} on ${data.date} at ${data.time}.`,
+    body: responseMessage
+      ? `${who} is in for ${foodLabel} on ${data.date} at ${data.time}: "${responseMessage}"`
+      : `${who} is in for ${foodLabel} on ${data.date} at ${data.time}.`,
     url: "/dashboard",
   });
 }

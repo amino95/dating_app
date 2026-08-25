@@ -43,6 +43,10 @@ export default function PrivacyPage() {
               tied to that specific invite link
             </li>
             <li>
+              If you leave an optional note when responding (whether you accept or decline), we
+              store that note and show it to the Requester
+            </li>
+            <li>
               We do not collect your name, email, or any other identifying information, unless
               the Requester already entered your name when creating the invite
             </li>

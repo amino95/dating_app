@@ -38,16 +38,17 @@ enum InviteStatus {
 }
 
 model Invite {
-  id             String       @id @default(cuid())
-  token          String       @unique
-  status         InviteStatus @default(PENDING)
-  inviteeName    String?
-  message        String?
-  createdAt      DateTime     @default(now())
-  respondedAt    DateTime?
-  chosenDate     String?
-  chosenTime     String?
-  foodChoice     String?
+  id              String       @id @default(cuid())
+  token           String       @unique
+  status          InviteStatus @default(PENDING)
+  inviteeName     String?
+  message         String?
+  createdAt       DateTime     @default(now())
+  respondedAt     DateTime?
+  chosenDate      String?
+  chosenTime      String?
+  foodChoice      String?
+  responseMessage String?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String

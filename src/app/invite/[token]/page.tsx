@@ -36,6 +36,7 @@ export default async function InvitePage({
           chosenDate={invite.chosenDate}
           chosenTime={invite.chosenTime}
           foodChoice={invite.foodChoice}
+          responseMessage={invite.responseMessage}
         />
       </div>
     </main>
